@@ -1,0 +1,96 @@
+'use client';
+
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { MapPin } from 'lucide-react';
+import { usdCompact } from '@/lib/format';
+
+type GlobePoint = {
+  rank: number;
+  iso3: string;
+  country: string;
+  country_zh?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  gdp_current_usd: number;
+  year: number;
+  share_of_world_percent: number;
+  population?: string;
+};
+
+function project(lat: number, lon: number, rotation: number) {
+  const r = Math.PI / 180;
+  const rotatedLon = (lon + rotation) * r;
+  const latRad = lat * r;
+  const x = 50 + 42 * Math.cos(latRad) * Math.sin(rotatedLon);
+  const y = 50 - 42 * Math.sin(latRad);
+  const z = Math.cos(latRad) * Math.cos(rotatedLon);
+  return { x, y, visible: z > -0.18, scale: Math.max(0.72, z + 0.62) };
+}
+
+export default function InteractiveGlobe({ points }: { points: GlobePoint[] }) {
+  const [rotation, setRotation] = useState(-105);
+  const [dragging, setDragging] = useState(false);
+  const [lastX, setLastX] = useState(0);
+  const topPoints = useMemo(() => points.filter((p) => typeof p.latitude === 'number' && typeof p.longitude === 'number').slice(0, 10), [points]);
+
+  function startDrag(clientX: number) {
+    setDragging(true);
+    setLastX(clientX);
+  }
+  function moveDrag(clientX: number) {
+    if (!dragging) return;
+    setRotation((r) => r + (clientX - lastX) * 0.55);
+    setLastX(clientX);
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-bold">全球 GDP Top10 三维地球</h2>
+          <p className="text-sm text-slate-400">拖动地球可旋转，悬停定位标志查看信息，点击进入国家详情页。</p>
+        </div>
+        <span className="rounded-full border border-sky-300/30 px-3 py-1 text-xs text-sky-200">Interactive Globe</span>
+      </div>
+      <div
+        className="relative mx-auto aspect-square max-w-[560px] cursor-grab select-none rounded-full border border-sky-300/30 bg-[radial-gradient(circle_at_35%_30%,#38bdf8_0%,#075985_38%,#082f49_64%,#020617_100%)] shadow-[0_0_70px_rgba(56,189,248,.35)] active:cursor-grabbing"
+        onMouseDown={(e) => startDrag(e.clientX)}
+        onMouseMove={(e) => moveDrag(e.clientX)}
+        onMouseUp={() => setDragging(false)}
+        onMouseLeave={() => setDragging(false)}
+        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+        onTouchEnd={() => setDragging(false)}
+      >
+        <div className="absolute inset-0 rounded-full opacity-30 [background-image:linear-gradient(90deg,transparent_49%,rgba(255,255,255,.18)_50%,transparent_51%),linear-gradient(0deg,transparent_49%,rgba(255,255,255,.14)_50%,transparent_51%)] [background-size:48px_48px]" />
+        <div className="absolute inset-[8%] rounded-full border border-white/10" />
+        <div className="absolute inset-[18%] rounded-full border border-white/10" />
+        {topPoints.map((p) => {
+          const pos = project(p.latitude as number, p.longitude as number, rotation);
+          if (!pos.visible) return null;
+          return (
+            <Link
+              key={p.iso3}
+              href={`/country/${p.iso3}`}
+              className="group absolute -translate-x-1/2 -translate-y-full"
+              style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: `translate(-50%, -100%) scale(${pos.scale})` }}
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-rose-500 text-white shadow-[0_0_22px_rgba(244,63,94,.8)] ring-4 ring-rose-400/20 transition group-hover:scale-125">
+                <MapPin className="h-5 w-5" />
+              </span>
+              <span className="pointer-events-none absolute left-1/2 top-[-118px] hidden w-64 -translate-x-1/2 rounded-2xl border border-white/15 bg-slate-950/95 p-3 text-xs shadow-2xl backdrop-blur group-hover:block">
+                <b className="text-base text-white">#{p.rank} {p.country_zh ?? p.country}</b>
+                <span className="mt-1 block text-slate-300">{p.country} · {p.iso3}</span>
+                <span className="mt-2 block text-sky-200">GDP：{usdCompact(p.gdp_current_usd)}</span>
+                <span className="block text-slate-300">年份：{p.year} · 全球占比：{p.share_of_world_percent}%</span>
+                {p.population && <span className="block text-slate-300">人口：{p.population}</span>}
+                <span className="mt-2 block text-amber-200">点击查看经济、城市与旅游信息 →</span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
