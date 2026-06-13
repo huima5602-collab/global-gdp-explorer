@@ -1,3 +1,5 @@
+import { countryZh, getCountryMeta } from '@/lib/country-metadata';
+
 export type Country = {
   id: string;
   iso2Code: string;
@@ -22,10 +24,15 @@ export type LatestGdp = {
   rank: number;
   iso3: string;
   country: string;
+  country_zh: string;
   year: number;
   gdp_current_usd: number;
   gdp_trillion_usd: number;
   share_of_world_percent: number;
+  latitude?: number | null;
+  longitude?: number | null;
+  flag_url?: string;
+  population?: string;
 };
 
 const GDP_INDICATOR = 'NY.GDP.MKTP.CD';
@@ -75,15 +82,23 @@ export async function getLatestRanking(limit = 50, yearParam = 'latest'): Promis
     .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
   const worldTotal = rows.reduce((sum, r) => sum + (r.value ?? 0), 0);
 
-  return rows.slice(0, limit).map((r, i) => ({
-    rank: i + 1,
-    iso3: r.countryiso3code,
-    country: r.country.value,
-    year: Number(r.date),
-    gdp_current_usd: r.value ?? 0,
-    gdp_trillion_usd: Number(((r.value ?? 0) / 1e12).toFixed(3)),
-    share_of_world_percent: Number((((r.value ?? 0) / worldTotal) * 100).toFixed(2))
-  }));
+  return rows.slice(0, limit).map((r, i) => {
+    const meta = getCountryMeta(r.countryiso3code);
+    return {
+      rank: i + 1,
+      iso3: r.countryiso3code,
+      country: r.country.value,
+      country_zh: countryZh(r.countryiso3code, r.country.value),
+      year: Number(r.date),
+      gdp_current_usd: r.value ?? 0,
+      gdp_trillion_usd: Number(((r.value ?? 0) / 1e12).toFixed(3)),
+      share_of_world_percent: Number((((r.value ?? 0) / worldTotal) * 100).toFixed(2)),
+      latitude: meta?.latitude ?? null,
+      longitude: meta?.longitude ?? null,
+      flag_url: meta?.flagUrl,
+      population: meta?.population
+    };
+  });
 }
 
 export async function getCountryHistory(iso3: string, from?: number, to?: number) {
@@ -93,6 +108,7 @@ export async function getCountryHistory(iso3: string, from?: number, to?: number
     .map((r) => ({
       iso3: r.countryiso3code,
       country: r.country.value,
+      country_zh: countryZh(r.countryiso3code, r.country.value),
       year: Number(r.date),
       gdp_current_usd: r.value ?? 0,
       gdp_trillion_usd: Number(((r.value ?? 0) / 1e12).toFixed(3)),
@@ -101,4 +117,16 @@ export async function getCountryHistory(iso3: string, from?: number, to?: number
       source: 'World Bank WDI'
     }))
     .sort((a, b) => a.year - b.year);
+}
+
+export async function getCountryProfile(iso3: string) {
+  const history = await getCountryHistory(iso3, 2005);
+  const latest = history.at(-1) ?? null;
+  const meta = getCountryMeta(iso3);
+  return {
+    iso3: iso3.toUpperCase(),
+    latest,
+    history,
+    meta: meta ?? null
+  };
 }
