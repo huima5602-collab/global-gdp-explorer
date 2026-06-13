@@ -28,7 +28,11 @@ export type CountryMeta = {
   attractions: AttractionInfo[];
 };
 
-const img = (q: string) => `https://source.unsplash.com/900x600/?${encodeURIComponent(q)}`;
+function hashCode(input: string) {
+  return input.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 9999;
+}
+
+const img = (q: string) => `https://loremflickr.com/900/600/${encodeURIComponent(q)}?lock=${hashCode(q)}`;
 
 export const COUNTRY_META: Record<string, CountryMeta> = {
   USA: {
@@ -40,8 +44,8 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '旧金山', nameEn: 'San Francisco', image: img('San Francisco Golden Gate'), description: '湾区创新经济的重要门户。' }
     ],
     attractions: [
-      { nameZh: '自由女神像', nameEn: 'Statue of Liberty', image: img('Statue of Liberty'), description: '纽约港的代表性地标。' },
-      { nameZh: '大峡谷', nameEn: 'Grand Canyon', image: img('Grand Canyon'), description: '世界知名自然景观。' }
+      { nameZh: '自由女神像', nameEn: 'Statue of Liberty', image: img('Statue of Liberty New York'), description: '纽约港的代表性地标。' },
+      { nameZh: '大峡谷', nameEn: 'Grand Canyon', image: img('Grand Canyon Arizona'), description: '世界知名自然景观。' }
     ]
   },
   CHN: {
@@ -65,7 +69,7 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '慕尼黑', nameEn: 'Munich', image: img('Munich Germany'), description: '汽车、科技和会展经济发达。' }
     ],
     attractions: [
-      { nameZh: '勃兰登堡门', nameEn: 'Brandenburg Gate', image: img('Brandenburg Gate'), description: '柏林标志性建筑。' },
+      { nameZh: '勃兰登堡门', nameEn: 'Brandenburg Gate', image: img('Brandenburg Gate Berlin'), description: '柏林标志性建筑。' },
       { nameZh: '新天鹅堡', nameEn: 'Neuschwanstein Castle', image: img('Neuschwanstein Castle'), description: '德国著名城堡景点。' }
     ]
   },
@@ -77,7 +81,7 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '大阪', nameEn: 'Osaka', image: img('Osaka Japan'), description: '关西经济中心。' }
     ],
     attractions: [
-      { nameZh: '富士山', nameEn: 'Mount Fuji', image: img('Mount Fuji'), description: '日本代表性自然地标。' },
+      { nameZh: '富士山', nameEn: 'Mount Fuji', image: img('Mount Fuji Japan'), description: '日本代表性自然地标。' },
       { nameZh: '京都清水寺', nameEn: 'Kiyomizu Temple', image: img('Kiyomizu Temple Kyoto'), description: '京都著名历史景点。' }
     ]
   },
@@ -89,7 +93,7 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '孟买', nameEn: 'Mumbai', image: img('Mumbai India'), description: '金融、影视和港口经济中心。' }
     ],
     attractions: [
-      { nameZh: '泰姬陵', nameEn: 'Taj Mahal', image: img('Taj Mahal'), description: '世界知名文化遗产。' },
+      { nameZh: '泰姬陵', nameEn: 'Taj Mahal', image: img('Taj Mahal India'), description: '世界知名文化遗产。' },
       { nameZh: '斋浦尔', nameEn: 'Jaipur', image: img('Jaipur India'), description: '印度著名旅游城市。' }
     ]
   },
@@ -102,7 +106,7 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
     ],
     attractions: [
       { nameZh: '大本钟', nameEn: 'Big Ben', image: img('Big Ben London'), description: '伦敦经典地标。' },
-      { nameZh: '巨石阵', nameEn: 'Stonehenge', image: img('Stonehenge'), description: '英国著名史前遗址。' }
+      { nameZh: '巨石阵', nameEn: 'Stonehenge', image: img('Stonehenge UK'), description: '英国著名史前遗址。' }
     ]
   },
   FRA: {
@@ -113,8 +117,8 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '里昂', nameEn: 'Lyon', image: img('Lyon France'), description: '工业、科研和美食城市。' }
     ],
     attractions: [
-      { nameZh: '埃菲尔铁塔', nameEn: 'Eiffel Tower', image: img('Eiffel Tower'), description: '法国最知名地标之一。' },
-      { nameZh: '卢浮宫', nameEn: 'Louvre Museum', image: img('Louvre Museum'), description: '世界著名博物馆。' }
+      { nameZh: '埃菲尔铁塔', nameEn: 'Eiffel Tower', image: img('Eiffel Tower Paris'), description: '法国最知名地标之一。' },
+      { nameZh: '卢浮宫', nameEn: 'Louvre Museum', image: img('Louvre Museum Paris'), description: '世界著名博物馆。' }
     ]
   },
   ITA: {
@@ -137,7 +141,7 @@ export const COUNTRY_META: Record<string, CountryMeta> = {
       { nameZh: '里约热内卢', nameEn: 'Rio de Janeiro', image: img('Rio de Janeiro'), description: '旅游和文化城市。' }
     ],
     attractions: [
-      { nameZh: '基督像', nameEn: 'Christ the Redeemer', image: img('Christ the Redeemer'), description: '里约热内卢地标。' },
+      { nameZh: '基督像', nameEn: 'Christ the Redeemer', image: img('Christ the Redeemer Brazil'), description: '里约热内卢地标。' },
       { nameZh: '亚马孙雨林', nameEn: 'Amazon Rainforest', image: img('Amazon Rainforest'), description: '全球重要生态区域。' }
     ]
   },
