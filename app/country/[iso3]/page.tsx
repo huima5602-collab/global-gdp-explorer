@@ -18,6 +18,11 @@ type Profile = {
   } | null;
 };
 
+function fallbackPhoto(title: string) {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='900' height='600' viewBox='0 0 900 600'><defs><linearGradient id='g' x1='0' x2='1' y1='0' y2='1'><stop stop-color='#0f172a'/><stop offset='0.55' stop-color='#075985'/><stop offset='1' stop-color='#38bdf8'/></linearGradient></defs><rect width='900' height='600' fill='url(#g)'/><circle cx='720' cy='120' r='180' fill='rgba(255,255,255,0.15)'/><text x='60' y='320' fill='white' font-size='54' font-family='Arial, sans-serif' font-weight='700'>${title}</text><text x='60' y='380' fill='#bae6fd' font-size='26' font-family='Arial, sans-serif'>Global GDP Explorer</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
+
 export default function CountryPage({ params }: { params: { iso3: string } }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +59,7 @@ export default function CountryPage({ params }: { params: { iso3: string } }) {
             </div>
           </div>
           <div className="rounded-3xl border border-white/10 bg-slate-950/50 p-5 text-center">
-            {meta?.flagUrl ? <img className="mx-auto mb-4 h-36 rounded-xl object-cover shadow-2xl" src={meta.flagUrl} alt={`${titleZh} flag`} /> : <Flag className="mx-auto h-24 w-24 text-slate-500" />}
+            {meta?.flagUrl ? <img className="mx-auto mb-4 h-36 rounded-xl object-cover shadow-2xl" src={meta.flagUrl} alt={`${titleZh} flag`} onError={(e) => { e.currentTarget.src = fallbackPhoto(`${titleZh} 国旗`); }} /> : <Flag className="mx-auto h-24 w-24 text-slate-500" />}
             <p className="text-sm text-slate-400">国旗 / National Flag</p>
           </div>
         </div>
@@ -80,7 +85,7 @@ export default function CountryPage({ params }: { params: { iso3: string } }) {
         <div className="grid gap-5 md:grid-cols-3">
           {(meta?.cities ?? []).map((city) => (
             <article key={city.nameEn} className="card overflow-hidden p-0">
-              <img className="h-44 w-full object-cover" src={city.image} alt={city.nameZh} />
+              <img className="h-44 w-full object-cover" src={city.image} alt={city.nameZh} loading="lazy" onError={(e) => { e.currentTarget.src = fallbackPhoto(city.nameZh); }} />
               <div className="p-5"><h3 className="text-xl font-bold">{city.nameZh}</h3><p className="text-sm text-slate-400">{city.nameEn}</p><p className="mt-2 text-slate-300">{city.description}</p></div>
             </article>
           ))}
@@ -92,7 +97,7 @@ export default function CountryPage({ params }: { params: { iso3: string } }) {
         <div className="grid gap-5 md:grid-cols-2">
           {(meta?.attractions ?? []).map((a) => (
             <article key={a.nameEn} className="card overflow-hidden p-0">
-              <img className="h-56 w-full object-cover" src={a.image} alt={a.nameZh} />
+              <img className="h-56 w-full object-cover" src={a.image} alt={a.nameZh} loading="lazy" onError={(e) => { e.currentTarget.src = fallbackPhoto(a.nameZh); }} />
               <div className="p-5"><h3 className="text-xl font-bold">{a.nameZh}</h3><p className="text-sm text-slate-400">{a.nameEn}</p><p className="mt-2 text-slate-300">{a.description}</p></div>
             </article>
           ))}
